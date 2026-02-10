@@ -1,0 +1,78 @@
+import { createTheme } from '@rneui/themed';
+
+export const lightTheme = createTheme({
+  lightColors: {
+    primary: '#0066CC',
+    secondary: '#4A5568',
+    background: '#FFFFFF',
+    white: '#FFFFFF',
+    black: '#1A202C',
+    grey0: '#F7FAFC',
+    grey1: '#EDF2F7',
+    grey2: '#E2E8F0',
+    grey3: '#CBD5E0',
+    grey4: '#A0AEC0',
+    grey5: '#718096',
+    greyOutline: '#E2E8F0',
+    searchBg: '#F7FAFC',
+    success: '#48BB78',
+    error: '#F56565',
+    warning: '#ED8936',
+    disabled: '#CBD5E0',
+    divider: '#E2E8F0',
+  },
+  mode: 'light',
+});
+
+export const darkTheme = createTheme({
+  darkColors: {
+    primary: '#3B82F6',
+    secondary: '#94A3B8',
+    background: '#0F172A',
+    white: '#F1F5F9',
+    black: '#0F172A',
+    grey0: '#1E293B',
+    grey1: '#334155',
+    grey2: '#475569',
+    grey3: '#64748B',
+    grey4: '#94A3B8',
+    grey5: '#CBD5E1',
+    greyOutline: '#334155',
+    searchBg: '#1E293B',
+    success: '#10B981',
+    error: '#EF4444',
+    warning: '#F59E0B',
+    disabled: '#475569',
+    divider: '#334155',
+  },
+  mode: 'dark',
+});
+
+export const colors = {
+  light: {
+    primary: '#0066CC',
+    secondary: '#4A5568',
+    background: '#FFFFFF',
+    surface: '#F7FAFC',
+    text: '#1A202C',
+    textSecondary: '#718096',
+    border: '#E2E8F0',
+    error: '#F56565',
+    success: '#48BB78',
+    warning: '#ED8936',
+    info: '#0066CC',
+  },
+  dark: {
+    primary: '#3B82F6',
+    secondary: '#94A3B8',
+    background: '#0F172A',
+    surface: '#1E293B',
+    text: '#F1F5F9',
+    textSecondary: '#94A3B8',
+    border: '#334155',
+    error: '#EF4444',
+    success: '#10B981',
+    warning: '#F59E0B',
+    info: '#3B82F6',
+  },
+};
