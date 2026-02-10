@@ -4,6 +4,10 @@ import profileReducer from './profileSlice';
 import directoryReducer from './directorySlice';
 import messagingReducer from './messagingSlice';
 import connectionReducer from './connectionSlice';
+import groupsReducer from './groupsSlice';
+import eventsReducer from './eventsSlice';
+import jobsReducer from './jobsSlice';
+import mentorshipReducer from './mentorshipSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +16,10 @@ export const store = configureStore({
     directory: directoryReducer,
     messaging: messagingReducer,
     connection: connectionReducer,
+    groups: groupsReducer,
+    events: eventsReducer,
+    jobs: jobsReducer,
+    mentorship: mentorshipReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

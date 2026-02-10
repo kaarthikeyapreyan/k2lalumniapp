@@ -8,21 +8,27 @@ import { AppDispatch, RootState } from '../../store';
 import { fetchCurrentProfile } from '../../store/profileSlice';
 import { fetchConnections } from '../../store/connectionSlice';
 import { fetchConversations } from '../../store/messagingSlice';
+import { fetchMyGroups } from '../../store/groupsSlice';
+import { fetchMyEvents } from '../../store/eventsSlice';
 
 export default function HomeScreen() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { theme } = useTheme();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { currentProfile, isLoading } = useSelector((state: RootState) => state.profile);
+  const { currentProfile, isLoading: profileLoading } = useSelector((state: RootState) => state.profile);
   const { connections } = useSelector((state: RootState) => state.connection);
   const { conversations } = useSelector((state: RootState) => state.messaging);
+  const { myGroups } = useSelector((state: RootState) => state.groups);
+  const { myEvents } = useSelector((state: RootState) => state.events);
 
   useEffect(() => {
     if (user) {
       dispatch(fetchCurrentProfile(user.id));
       dispatch(fetchConnections(user.id));
       dispatch(fetchConversations(user.id));
+      dispatch(fetchMyGroups());
+      dispatch(fetchMyEvents());
     }
   }, [user, dispatch]);
 
@@ -31,16 +37,19 @@ export default function HomeScreen() {
       dispatch(fetchCurrentProfile(user.id));
       dispatch(fetchConnections(user.id));
       dispatch(fetchConversations(user.id));
+      dispatch(fetchMyGroups());
+      dispatch(fetchMyEvents());
     }
   };
 
   const unreadCount = conversations.reduce((sum, conv) => sum + conv.unreadCount, 0);
+  const upcomingEventsCount = myEvents.filter(e => e.startDate > Date.now()).length;
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
+        <RefreshControl refreshing={profileLoading} onRefresh={handleRefresh} />
       }
     >
       <View style={styles.header}>
@@ -83,10 +92,40 @@ export default function HomeScreen() {
         </Card>
 
         <Card containerStyle={[styles.statCard, { backgroundColor: theme.colors.grey0 }]}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/events')}>
             <Ionicons name="calendar" size={32} color={theme.colors.primary} />
-            <Text style={[styles.statNumber, { color: theme.colors.black }]}>3</Text>
+            <Text style={[styles.statNumber, { color: theme.colors.black }]}>
+              {upcomingEventsCount}
+            </Text>
             <Text style={[styles.statLabel, { color: theme.colors.grey5 }]}>Events</Text>
+          </TouchableOpacity>
+        </Card>
+      </View>
+
+      <View style={styles.statsContainer}>
+        <Card containerStyle={[styles.statCard, { backgroundColor: theme.colors.grey0 }]}>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/groups')}>
+            <Ionicons name="chatbubbles-outline" size={32} color={theme.colors.primary} />
+            <Text style={[styles.statNumber, { color: theme.colors.black }]}>
+              {myGroups.length}
+            </Text>
+            <Text style={[styles.statLabel, { color: theme.colors.grey5 }]}>My Groups</Text>
+          </TouchableOpacity>
+        </Card>
+
+        <Card containerStyle={[styles.statCard, { backgroundColor: theme.colors.grey0 }]}>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/jobs')}>
+            <Ionicons name="briefcase" size={32} color={theme.colors.primary} />
+            <Text style={[styles.statNumber, { color: theme.colors.black }]}>Jobs</Text>
+            <Text style={[styles.statLabel, { color: theme.colors.grey5 }]}>Career</Text>
+          </TouchableOpacity>
+        </Card>
+
+        <Card containerStyle={[styles.statCard, { backgroundColor: theme.colors.grey0 }]}>
+          <TouchableOpacity onPress={() => router.push('/mentorship')}>
+            <Ionicons name="school" size={32} color={theme.colors.primary} />
+            <Text style={[styles.statNumber, { color: theme.colors.black }]}>Mentor</Text>
+            <Text style={[styles.statLabel, { color: theme.colors.grey5 }]}>Growth</Text>
           </TouchableOpacity>
         </Card>
       </View>
@@ -112,6 +151,54 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={[styles.actionCard, { backgroundColor: theme.colors.grey0 }]}
+          onPress={() => router.push('/(tabs)/groups')}
+        >
+          <Ionicons name="people-circle" size={24} color={theme.colors.primary} />
+          <View style={styles.actionContent}>
+            <Text style={[styles.actionTitle, { color: theme.colors.black }]}>
+              Join Groups
+            </Text>
+            <Text style={[styles.actionSubtitle, { color: theme.colors.grey5 }]}>
+              Connect with batchmates, interest groups, and location communities
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color={theme.colors.grey3} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionCard, { backgroundColor: theme.colors.grey0 }]}
+          onPress={() => router.push('/(tabs)/events')}
+        >
+          <Ionicons name="calendar-clear" size={24} color={theme.colors.primary} />
+          <View style={styles.actionContent}>
+            <Text style={[styles.actionTitle, { color: theme.colors.black }]}>
+              Discover Events
+            </Text>
+            <Text style={[styles.actionSubtitle, { color: theme.colors.grey5 }]}>
+              Networking mixers, reunions, career talks, and more
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color={theme.colors.grey3} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionCard, { backgroundColor: theme.colors.grey0 }]}
+          onPress={() => router.push('/(tabs)/jobs')}
+        >
+          <Ionicons name="briefcase" size={24} color={theme.colors.primary} />
+          <View style={styles.actionContent}>
+            <Text style={[styles.actionTitle, { color: theme.colors.black }]}>
+              Browse Jobs
+            </Text>
+            <Text style={[styles.actionSubtitle, { color: theme.colors.grey5 }]}>
+              Find career opportunities from alumni network
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color={theme.colors.grey3} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionCard, { backgroundColor: theme.colors.grey0 }]}
           onPress={() => router.push('/profile/edit')}
         >
           <Ionicons name="person" size={24} color={theme.colors.primary} />
@@ -127,18 +214,37 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.black }]}>Upcoming Events</Text>
-        <Card containerStyle={[styles.eventCard, { backgroundColor: theme.colors.grey0 }]}>
-          <Text style={[styles.eventTitle, { color: theme.colors.black }]}>
-            Alumni Networking Mixer
-          </Text>
-          <Text style={[styles.eventDate, { color: theme.colors.grey5 }]}>March 15, 2026 • 6:00 PM</Text>
-          <Text style={[styles.eventLocation, { color: theme.colors.grey5 }]}>
-            Downtown Convention Center
-          </Text>
-        </Card>
-      </View>
+      {upcomingEventsCount > 0 && (
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.black }]}>Your Upcoming Events</Text>
+          {myEvents
+            .filter(e => e.startDate > Date.now())
+            .slice(0, 3)
+            .map(event => (
+              <TouchableOpacity
+                key={event.id}
+                onPress={() => router.push(`/events/${event.id}` as any)}
+              >
+                <Card containerStyle={[styles.eventCard, { backgroundColor: theme.colors.grey0 }]}>
+                  <Text style={[styles.eventTitle, { color: theme.colors.black }]}>
+                    {event.title}
+                  </Text>
+                  <Text style={[styles.eventDate, { color: theme.colors.grey5 }]}>
+                    {new Date(event.startDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </Text>
+                  <Text style={[styles.eventLocation, { color: theme.colors.grey5 }]}>
+                    {event.location.virtual ? 'Virtual Event' : event.location.city}
+                  </Text>
+                </Card>
+              </TouchableOpacity>
+            ))}
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -176,7 +282,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginTop: 8,
   },
@@ -215,6 +321,7 @@ const styles = StyleSheet.create({
   eventCard: {
     borderRadius: 12,
     padding: 15,
+    marginBottom: 10,
   },
   eventTitle: {
     fontSize: 16,

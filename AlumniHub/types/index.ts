@@ -22,6 +22,79 @@ export enum PrivacyLevel {
   PRIVATE = 'private',
 }
 
+export enum GroupPrivacy {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
+}
+
+export enum GroupType {
+  BATCH = 'batch',
+  INTEREST = 'interest',
+  LOCATION = 'location',
+}
+
+export enum GroupMemberRole {
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  MEMBER = 'member',
+}
+
+export enum EventType {
+  REUNION = 'reunion',
+  CAREER = 'career',
+  NETWORKING = 'networking',
+  SOCIAL = 'social',
+  EDUCATIONAL = 'educational',
+  SPORTS = 'sports',
+  CHARITY = 'charity',
+}
+
+export enum RSVPStatus {
+  INTERESTED = 'interested',
+  GOING = 'going',
+  NOT_GOING = 'not_going',
+}
+
+export enum JobType {
+  FULL_TIME = 'full_time',
+  PART_TIME = 'part_time',
+  CONTRACT = 'contract',
+  INTERNSHIP = 'internship',
+  FREELANCE = 'freelance',
+}
+
+export enum ExperienceLevel {
+  ENTRY = 'entry',
+  MID = 'mid',
+  SENIOR = 'senior',
+  EXECUTIVE = 'executive',
+}
+
+export enum MentorshipStatus {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+}
+
+export enum MentorshipRequestStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  DECLINED = 'declined',
+}
+
+export enum NotificationType {
+  GROUP_INVITE = 'group_invite',
+  GROUP_JOIN_REQUEST = 'group_join_request',
+  EVENT_REMINDER = 'event_reminder',
+  EVENT_INVITE = 'event_invite',
+  JOB_MATCH = 'job_match',
+  MENTORSHIP_REQUEST = 'mentorship_request',
+  MENTORSHIP_ACCEPTED = 'mentorship_accepted',
+  SKILL_ENDORSEMENT = 'skill_endorsement',
+  RECOMMENDATION = 'recommendation',
+}
+
 export interface User {
   id: string;
   email: string;
@@ -92,6 +165,202 @@ export interface Connection {
   acceptedAt?: number;
 }
 
+export interface GroupMember {
+  userId: string;
+  role: GroupMemberRole;
+  joinedAt: number;
+  user?: Profile;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  description: string;
+  coverImage?: string;
+  type: GroupType;
+  privacy: GroupPrivacy;
+  createdBy: string;
+  createdAt: number;
+  members: GroupMember[];
+  memberCount: number;
+  isJoined?: boolean;
+  pendingJoinRequest?: boolean;
+}
+
+export interface GroupPost {
+  id: string;
+  groupId: string;
+  authorId: string;
+  content: string;
+  images?: string[];
+  media?: string;
+  timestamp: number;
+  likes: string[];
+  comments: GroupComment[];
+  isPinned: boolean;
+  isAnnouncement: boolean;
+  author?: Profile;
+}
+
+export interface GroupComment {
+  id: string;
+  postId: string;
+  authorId: string;
+  content: string;
+  timestamp: number;
+  author?: Profile;
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  type: EventType;
+  startDate: number;
+  endDate: number;
+  location: {
+    name: string;
+    address?: string;
+    city?: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+    virtual?: boolean;
+    virtualLink?: string;
+  };
+  capacity?: number;
+  categories: string[];
+  speakers?: Profile[];
+  hosts: string[];
+  attendees: EventAttendee[];
+  attendeeCount: number;
+  createdBy: string;
+  groupId?: string;
+  createdAt: number;
+  userRSVP?: RSVPStatus;
+}
+
+export interface EventAttendee {
+  userId: string;
+  status: RSVPStatus;
+  rsvpAt: number;
+  user?: Profile;
+}
+
+export interface Job {
+  id: string;
+  title: string;
+  company: string;
+  description: string;
+  requirements: string[];
+  salaryRange?: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+  location: {
+    city?: string;
+    state?: string;
+    country: string;
+    remote: boolean;
+  };
+  jobType: JobType;
+  experienceLevel: ExperienceLevel;
+  industry: string;
+  skills: string[];
+  postedBy: string;
+  postedAt: number;
+  expiresAt?: number;
+  isActive: boolean;
+  applications: JobApplication[];
+  applicationCount: number;
+  poster?: Profile;
+}
+
+export interface JobApplication {
+  id: string;
+  jobId: string;
+  applicantId: string;
+  coverLetter?: string;
+  resume?: string;
+  appliedAt: number;
+  status: 'pending' | 'reviewed' | 'accepted' | 'rejected';
+  applicant?: Profile;
+}
+
+export interface SavedJob {
+  jobId: string;
+  savedAt: number;
+  job?: Job;
+}
+
+export interface Mentorship {
+  id: string;
+  mentorId: string;
+  title: string;
+  expertise: string[];
+  availability: string;
+  mentoringStyle: string;
+  description: string;
+  isActive: boolean;
+  maxMentees: number;
+  currentMentees: number;
+  createdAt: number;
+  mentor?: Profile;
+}
+
+export interface MentorshipRequest {
+  id: string;
+  mentorshipId: string;
+  mentorId: string;
+  menteeId: string;
+  message: string;
+  goals: string[];
+  status: MentorshipRequestStatus;
+  requestedAt: number;
+  respondedAt?: number;
+  mentorship?: Mentorship;
+  mentor?: Profile;
+  mentee?: Profile;
+}
+
+export interface SkillEndorsement {
+  id: string;
+  skill: string;
+  endorsedUserId: string;
+  endorsedById: string;
+  endorsedAt: number;
+  weight: number;
+  endorsedBy?: Profile;
+}
+
+export interface Recommendation {
+  id: string;
+  recipientId: string;
+  authorId: string;
+  relationship: string;
+  content: string;
+  createdAt: number;
+  author?: Profile;
+  recipient?: Profile;
+}
+
+export interface Resource {
+  id: string;
+  title: string;
+  description: string;
+  type: 'article' | 'course' | 'certification' | 'video' | 'book';
+  url?: string;
+  authorId: string;
+  skills: string[];
+  createdAt: number;
+  likes: string[];
+  shares: number;
+  author?: Profile;
+}
+
 export interface FilterOptions {
   yearRange?: {
     min: number;
@@ -101,6 +370,25 @@ export interface FilterOptions {
   locations?: string[];
   industries?: string[];
   skills?: string[];
+}
+
+export interface JobFilterOptions {
+  industries?: string[];
+  locations?: string[];
+  experienceLevels?: ExperienceLevel[];
+  jobTypes?: JobType[];
+  remote?: boolean;
+  skills?: string[];
+}
+
+export interface EventFilterOptions {
+  types?: EventType[];
+  dateRange?: {
+    start: number;
+    end: number;
+  };
+  locations?: string[];
+  virtual?: boolean;
 }
 
 export interface AuthState {
@@ -139,6 +427,44 @@ export interface ConnectionState {
   connections: Connection[];
   pendingRequests: Connection[];
   sentRequests: Connection[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface GroupsState {
+  groups: Group[];
+  myGroups: Group[];
+  currentGroup: Group | null;
+  posts: GroupPost[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface EventsState {
+  events: Event[];
+  myEvents: Event[];
+  currentEvent: Event | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface JobsState {
+  jobs: Job[];
+  myApplications: JobApplication[];
+  savedJobs: SavedJob[];
+  myJobPostings: Job[];
+  currentJob: Job | null;
+  filters: JobFilterOptions;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface MentorshipState {
+  mentorships: Mentorship[];
+  myMentorships: Mentorship[];
+  requests: MentorshipRequest[];
+  myRequests: MentorshipRequest[];
+  currentMentorship: Mentorship | null;
   isLoading: boolean;
   error: string | null;
 }
