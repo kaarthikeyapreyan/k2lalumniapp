@@ -10,6 +10,7 @@ import { fetchConnections } from '../../store/connectionSlice';
 import { fetchConversations } from '../../store/messagingSlice';
 import { fetchMyGroups } from '../../store/groupsSlice';
 import { fetchMyEvents } from '../../store/eventsSlice';
+import { fetchUnreadCount } from '../../store/notificationsSlice';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function HomeScreen() {
   const { conversations } = useSelector((state: RootState) => state.messaging);
   const { myGroups } = useSelector((state: RootState) => state.groups);
   const { myEvents } = useSelector((state: RootState) => state.events);
+  const { unreadCount: notificationUnreadCount } = useSelector((state: RootState) => state.notifications);
 
   useEffect(() => {
     if (user) {
@@ -29,6 +31,7 @@ export default function HomeScreen() {
       dispatch(fetchConversations(user.id));
       dispatch(fetchMyGroups());
       dispatch(fetchMyEvents());
+      dispatch(fetchUnreadCount());
     }
   }, [user, dispatch]);
 
@@ -39,6 +42,7 @@ export default function HomeScreen() {
       dispatch(fetchConversations(user.id));
       dispatch(fetchMyGroups());
       dispatch(fetchMyEvents());
+      dispatch(fetchUnreadCount());
     }
   };
 
@@ -104,6 +108,16 @@ export default function HomeScreen() {
 
       <View style={styles.statsContainer}>
         <Card containerStyle={[styles.statCard, { backgroundColor: theme.colors.grey0 }]}>
+          <TouchableOpacity onPress={() => router.push('/notifications')}>
+            <Ionicons name="notifications" size={32} color={theme.colors.primary} />
+            <Text style={[styles.statNumber, { color: theme.colors.black }]}>
+              {notificationUnreadCount}
+            </Text>
+            <Text style={[styles.statLabel, { color: theme.colors.grey5 }]}>Alerts</Text>
+          </TouchableOpacity>
+        </Card>
+
+        <Card containerStyle={[styles.statCard, { backgroundColor: theme.colors.grey0 }]}>
           <TouchableOpacity onPress={() => router.push('/(tabs)/groups')}>
             <Ionicons name="chatbubbles-outline" size={32} color={theme.colors.primary} />
             <Text style={[styles.statNumber, { color: theme.colors.black }]}>
@@ -120,18 +134,35 @@ export default function HomeScreen() {
             <Text style={[styles.statLabel, { color: theme.colors.grey5 }]}>Career</Text>
           </TouchableOpacity>
         </Card>
-
-        <Card containerStyle={[styles.statCard, { backgroundColor: theme.colors.grey0 }]}>
-          <TouchableOpacity onPress={() => router.push('/mentorship')}>
-            <Ionicons name="school" size={32} color={theme.colors.primary} />
-            <Text style={[styles.statNumber, { color: theme.colors.black }]}>Mentor</Text>
-            <Text style={[styles.statLabel, { color: theme.colors.grey5 }]}>Growth</Text>
-          </TouchableOpacity>
-        </Card>
       </View>
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.colors.black }]}>Quick Actions</Text>
+
+        <TouchableOpacity
+          style={[styles.actionCard, { backgroundColor: theme.colors.grey0 }]}
+          onPress={() => router.push('/(tabs)/feed')}
+        >
+          <Ionicons name="newspaper" size={24} color={theme.colors.primary} />
+          <View style={styles.actionContent}>
+            <Text style={[styles.actionTitle, { color: theme.colors.black }]}>
+              Activity Feed
+            </Text>
+            <Text style={[styles.actionSubtitle, { color: theme.colors.grey5 }]}>
+              See what your network is sharing
+            </Text>
+          </View>
+          <View style={styles.actionBadge}>
+            {notificationUnreadCount > 0 && (
+              <View style={[styles.badge, { backgroundColor: theme.colors.error }]}>
+                <Text style={styles.badgeText}>
+                  {notificationUnreadCount > 99 ? '99+' : notificationUnreadCount}
+                </Text>
+              </View>
+            )}
+            <Ionicons name="chevron-forward" size={24} color={theme.colors.grey3} />
+          </View>
+        </TouchableOpacity>
         
         <TouchableOpacity
           style={[styles.actionCard, { backgroundColor: theme.colors.grey0 }]}
@@ -317,6 +348,24 @@ const styles = StyleSheet.create({
   actionSubtitle: {
     fontSize: 14,
     marginTop: 2,
+  },
+  actionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  badge: {
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: 'bold',
+    paddingHorizontal: 4,
   },
   eventCard: {
     borderRadius: 12,

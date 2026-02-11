@@ -93,6 +93,37 @@ export enum NotificationType {
   MENTORSHIP_ACCEPTED = 'mentorship_accepted',
   SKILL_ENDORSEMENT = 'skill_endorsement',
   RECOMMENDATION = 'recommendation',
+  POST_LIKE = 'post_like',
+  POST_COMMENT = 'post_comment',
+  POST_SHARE = 'post_share',
+  CONNECTION_REQUEST = 'connection_request',
+  CONNECTION_ACCEPTED = 'connection_accepted',
+  NEW_POST = 'new_post',
+  MENTION = 'mention',
+  SYSTEM = 'system',
+}
+
+export enum FeedItemType {
+  POST = 'post',
+  EVENT = 'event',
+  JOB = 'job',
+  MILESTONE = 'milestone',
+  MEDIA = 'media',
+  SHARED_POST = 'shared_post',
+}
+
+export enum FeedFilter {
+  ALL = 'all',
+  POSTS = 'posts',
+  EVENTS = 'events',
+  JOBS = 'jobs',
+  MEDIA = 'media',
+}
+
+export enum FeedSort {
+  LATEST = 'latest',
+  TOP = 'top',
+  TRENDING = 'trending',
 }
 
 export interface User {
@@ -465,6 +496,102 @@ export interface MentorshipState {
   requests: MentorshipRequest[];
   myRequests: MentorshipRequest[];
   currentMentorship: Mentorship | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface FeedComment {
+  id: string;
+  postId: string;
+  authorId: string;
+  content: string;
+  timestamp: number;
+  likes: string[];
+  author?: Profile;
+}
+
+export interface FeedItem {
+  id: string;
+  type: FeedItemType;
+  authorId: string;
+  content: string;
+  images?: string[];
+  mediaUrl?: string;
+  timestamp: number;
+  likes: string[];
+  comments: FeedComment[];
+  shares: string[];
+  views: number;
+  isPinned: boolean;
+  isEdited: boolean;
+  editedAt?: number;
+  sharedPostId?: string;
+  sharedPost?: FeedItem;
+  eventId?: string;
+  event?: Event;
+  jobId?: string;
+  job?: Job;
+  author?: Profile;
+  score?: number;
+}
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  timestamp: number;
+  isRead: boolean;
+  senderId?: string;
+  sender?: Profile;
+  targetId?: string;
+  targetType?: string;
+  actionUrl?: string;
+}
+
+export interface NotificationFeatureSettings {
+  push: boolean;
+  inApp: boolean;
+  email: boolean;
+}
+
+export interface NotificationSettings {
+  globalEnabled: boolean;
+  doNotDisturb: boolean;
+  quietHoursStart?: number;
+  quietHoursEnd?: number;
+  soundEnabled: boolean;
+  vibrationEnabled: boolean;
+  features: {
+    connections: NotificationFeatureSettings;
+    messages: NotificationFeatureSettings;
+    groups: NotificationFeatureSettings;
+    events: NotificationFeatureSettings;
+    jobs: NotificationFeatureSettings;
+    mentorship: NotificationFeatureSettings;
+    mentions: NotificationFeatureSettings;
+    postInteractions: NotificationFeatureSettings;
+    system: NotificationFeatureSettings;
+  };
+}
+
+export interface FeedState {
+  items: FeedItem[];
+  filteredItems: FeedItem[];
+  currentItem: FeedItem | null;
+  filter: FeedFilter;
+  sort: FeedSort;
+  page: number;
+  hasMore: boolean;
+  isLoading: boolean;
+  error: string | null;
+  isRealtimeConnected: boolean;
+}
+
+export interface NotificationsState {
+  notifications: Notification[];
+  unreadCount: number;
+  settings: NotificationSettings;
   isLoading: boolean;
   error: string | null;
 }
