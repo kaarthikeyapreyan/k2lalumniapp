@@ -468,3 +468,155 @@ export interface MentorshipState {
   isLoading: boolean;
   error: string | null;
 }
+
+export enum FeedItemType {
+  POST = 'post',
+  GROUP_ANNOUNCEMENT = 'group_announcement',
+  GROUP_POST = 'group_post',
+  EVENT_INVITATION = 'event_invitation',
+  EVENT_UPDATE = 'event_update',
+  JOB_POSTING = 'job_posting',
+  ACHIEVEMENT = 'achievement',
+  MILESTONE = 'milestone',
+  POLL = 'poll',
+  SURVEY = 'survey',
+}
+
+export enum FeedItemVisibility {
+  CONNECTIONS_ONLY = 'connections_only',
+  PUBLIC = 'public',
+  GROUP_MEMBERS = 'group_members',
+}
+
+export enum FeedSortOption {
+  CHRONOLOGICAL = 'chronological',
+  ALGORITHMIC = 'algorithmic',
+}
+
+export interface PollOption {
+  id: string;
+  text: string;
+  votes: string[];
+}
+
+export interface FeedItem {
+  id: string;
+  type: FeedItemType;
+  authorId: string;
+  author?: Profile;
+  content: string;
+  images?: string[];
+  media?: string;
+  mediaType?: 'video' | 'audio';
+  timestamp: number;
+  visibility: FeedItemVisibility;
+  groupId?: string;
+  group?: Group;
+  eventId?: string;
+  event?: Event;
+  jobId?: string;
+  job?: Job;
+  likes: string[];
+  comments: FeedComment[];
+  shares: string[];
+  isPinned: boolean;
+  pollOptions?: PollOption[];
+  pollEndsAt?: number;
+  metadata?: {
+    achievementType?: string;
+    milestoneCount?: number;
+    surveyUrl?: string;
+  };
+}
+
+export interface FeedComment {
+  id: string;
+  feedItemId: string;
+  authorId: string;
+  author?: Profile;
+  content: string;
+  timestamp: number;
+  likes: string[];
+  replies?: FeedComment[];
+}
+
+export interface FeedFilter {
+  showPosts: boolean;
+  showGroupActivity: boolean;
+  showEvents: boolean;
+  showJobs: boolean;
+  showAchievements: boolean;
+  mutedKeywords: string[];
+  mutedUserIds: string[];
+}
+
+export interface FeedState {
+  items: FeedItem[];
+  hasMore: boolean;
+  page: number;
+  sortBy: FeedSortOption;
+  filter: FeedFilter;
+  isLoading: boolean;
+  error: string | null;
+  refreshing: boolean;
+}
+
+export enum NotificationCategory {
+  CONNECTIONS = 'connections',
+  MESSAGES = 'messages',
+  GROUPS = 'groups',
+  EVENTS = 'events',
+  JOBS = 'jobs',
+  ACHIEVEMENTS = 'achievements',
+  ADMIN = 'admin',
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  category: NotificationCategory;
+  type: string;
+  title: string;
+  message: string;
+  image?: string;
+  actionUrl?: string;
+  relatedUserId?: string;
+  relatedUser?: Profile;
+  relatedEntityId?: string;
+  relatedEntityType?: string;
+  isRead: boolean;
+  isActioned: boolean;
+  createdAt: number;
+  priority: 'low' | 'normal' | 'high';
+}
+
+export interface NotificationSettings {
+  globalEnabled: boolean;
+  perCategory: {
+    [key in NotificationCategory]: {
+      enabled: boolean;
+      pushEnabled: boolean;
+      soundEnabled: boolean;
+      vibrationEnabled: boolean;
+    };
+  };
+  doNotDisturb: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+    timezone: string;
+  };
+  quietHours: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+  };
+}
+
+export interface NotificationState {
+  notifications: Notification[];
+  unreadCount: number;
+  settings: NotificationSettings;
+  isLoading: boolean;
+  error: string | null;
+}
