@@ -8,6 +8,8 @@ import groupsReducer from './groupsSlice';
 import eventsReducer from './eventsSlice';
 import jobsReducer from './jobsSlice';
 import mentorshipReducer from './mentorshipSlice';
+import feedReducer from './feedSlice';
+import notificationsReducer from './notificationsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +22,8 @@ export const store = configureStore({
     events: eventsReducer,
     jobs: jobsReducer,
     mentorship: mentorshipReducer,
+    feed: feedReducer,
+    notifications: notificationsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
