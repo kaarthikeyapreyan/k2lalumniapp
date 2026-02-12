@@ -1,55 +1,59 @@
 import { Tabs } from 'expo-router';
-import { useTheme } from '@rneui/themed';
-import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { Icon } from '@rneui/themed';
+import { View } from 'react-native';
 
-export default function TabsLayout() {
-  const { theme } = useTheme();
-
+export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.grey3,
-        tabBarStyle: {
-          backgroundColor: theme.colors.background,
-          borderTopColor: theme.colors.grey2,
-        },
-      }}
-    >
+        tabBarActiveTintColor: '#007AFF',
+        headerShown: true,
+      }}>
       <Tabs.Screen
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="feed"
-        options={{
-          title: 'Feed',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="newspaper-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Icon name="home" type="feather" color={color} />,
         }}
       />
       <Tabs.Screen
         name="directory"
         options={{
-          title: 'Directory',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
-          ),
+          title: 'Alumni',
+          tabBarIcon: ({ color }) => <Icon name="users" type="feather" color={color} />,
         }}
       />
       <Tabs.Screen
         name="groups"
         options={{
           title: 'Groups',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubbles-outline" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Icon name="users" type="feather" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="create-post"
+        options={{
+          title: '',
+          tabBarIcon: ({ color }) => (
+            <View style={{
+              backgroundColor: '#007AFF',
+              width: 50,
+              height: 50,
+              borderRadius: 25,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: -10,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4.65,
+              elevation: 8,
+            }}>
+              <Icon name="plus" type="feather" color="white" size={30} />
+            </View>
           ),
         }}
       />
@@ -57,36 +61,28 @@ export default function TabsLayout() {
         name="events"
         options={{
           title: 'Events',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Icon name="calendar" type="feather" color={color} />,
         }}
       />
       <Tabs.Screen
         name="jobs"
         options={{
           title: 'Jobs',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="briefcase-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Icon name="briefcase" type="feather" color={color} />,
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="mail-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Icon name="message-square" type="feather" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Icon name="user" type="feather" color={color} />,
         }}
       />
     </Tabs>

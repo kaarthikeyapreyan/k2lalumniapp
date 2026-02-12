@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { Input, Button, CheckBox, useTheme } from '@rneui/themed';
+import { Input, Button, useTheme } from '@rneui/themed';
 import { Ionicons } from '@expo/vector-icons';
 import { AppDispatch, RootState } from '../../store';
 import { signup, oauthLogin } from '../../store/authSlice';
@@ -21,7 +21,7 @@ export default function SignupScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const { theme } = useTheme();
   const { isLoading, error } = useSelector((state: RootState) => state.auth);
-  
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -163,13 +163,19 @@ export default function SignupScreen() {
             inputStyle={{ color: theme.colors.black }}
           />
 
-          <CheckBox
-            title="I accept the Terms of Service"
-            checked={acceptedTerms}
+          <TouchableOpacity
+            style={styles.checkboxContainer}
             onPress={() => setAcceptedTerms(!acceptedTerms)}
-            containerStyle={[styles.checkboxContainer, { backgroundColor: theme.colors.background }]}
-            textStyle={{ color: theme.colors.grey5 }}
-          />
+          >
+            <Ionicons
+              name={acceptedTerms ? 'checkbox' : 'square-outline'}
+              size={24}
+              color={acceptedTerms ? theme.colors.primary : theme.colors.grey3}
+            />
+            <Text style={[styles.checkboxText, { color: theme.colors.grey5 }]}>
+              I accept the Terms of Service
+            </Text>
+          </TouchableOpacity>
 
           <Button
             title="Sign Up"
@@ -248,10 +254,19 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginBottom: 10,
   },
+
+
+  // ...
+
   checkboxContainer: {
-    borderWidth: 0,
-    marginLeft: 0,
-    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  checkboxText: {
+    marginLeft: 10,
+    fontSize: 16,
   },
   button: {
     paddingVertical: 12,

@@ -1,12 +1,13 @@
-import { FeedItem, FeedComment, Notification, NotificationType } from '../../types';
+import { FeedItem, FeedComment, Notification, NotificationType, FeedItemType, FeedItemVisibility, NotificationCategory } from '../../types';
+import { currentUserProfile } from '../data/profiles';
 
-export type WebSocketEventType = 
+export type WebSocketEventType =
   | 'feed_update'
   | 'new_post'
   | 'post_like'
   | 'post_comment'
   | 'post_share'
-  | 'notification';
+  | 'notification_received';
 
 export interface WebSocketEvent {
   type: WebSocketEventType;
@@ -66,6 +67,10 @@ class MockWebSocketService {
     };
   }
 
+  on(eventType: WebSocketEventType, handler: EventHandler): () => void {
+    return this.subscribe(eventType, handler);
+  }
+
   private emit(eventType: WebSocketEventType, data: WebSocketEvent['data']): void {
     const event: WebSocketEvent = {
       type: eventType,
@@ -95,7 +100,7 @@ class MockWebSocketService {
   }
 
   private simulateRandomEvent(): void {
-    const events: WebSocketEventType[] = ['new_post', 'post_like', 'post_comment', 'notification'];
+    const events: WebSocketEventType[] = ['new_post', 'post_like', 'post_comment', 'notification_received'];
     const randomEvent = events[Math.floor(Math.random() * events.length)];
 
     switch (randomEvent) {
@@ -108,7 +113,7 @@ class MockWebSocketService {
       case 'post_comment':
         this.simulatePostComment();
         break;
-      case 'notification':
+      case 'notification_received':
         this.simulateNotification();
         break;
     }
@@ -117,13 +122,14 @@ class MockWebSocketService {
   private simulateNewPost(): void {
     const mockUserIds = ['user_002', 'user_003', 'user_004', 'user_005', 'user_006'];
     const randomUserId = mockUserIds[Math.floor(Math.random() * mockUserIds.length)];
-    
+
     const newPost: FeedItem = {
       id: `feed_sim_${Date.now()}`,
-      type: 'post' as const,
+      type: FeedItemType.POST,
       authorId: randomUserId,
       content: 'Just shared a quick update from the alumni network! 🚀',
       timestamp: Date.now(),
+      visibility: FeedItemVisibility.PUBLIC,
       likes: [],
       comments: [],
       shares: [],
@@ -178,16 +184,20 @@ class MockWebSocketService {
 
     const notification: Notification = {
       id: `notif_sim_${Date.now()}`,
+      userId: currentUserProfile.id,
+      category: NotificationCategory.CONNECTIONS,
       type: randomType,
-      title: randomType === NotificationType.POST_LIKE ? 'New Like' : 
-             randomType === NotificationType.POST_COMMENT ? 'New Comment' : 'New Mention',
+      title: randomType === NotificationType.POST_LIKE ? 'New Like' :
+        randomType === NotificationType.POST_COMMENT ? 'New Comment' : 'New Mention',
       message: `User ${randomUserId} interacted with your content`,
-      timestamp: Date.now(),
       isRead: false,
-      senderId: randomUserId,
+      isActioned: false,
+      priority: 'normal',
+      createdAt: Date.now(),
+      relatedUserId: randomUserId,
     };
 
-    this.emit('notification', notification);
+    this.emit('notification_received', notification);
   }
 
   // Public methods to manually trigger events (for testing)
@@ -204,7 +214,7 @@ class MockWebSocketService {
   }
 
   triggerNotification(notification: Notification): void {
-    this.emit('notification', notification);
+    this.emit('notification_received', notification);
   }
 }
 

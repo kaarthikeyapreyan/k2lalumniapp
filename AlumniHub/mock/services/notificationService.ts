@@ -1,265 +1,174 @@
-import { mockDelay, shouldFail } from '../../utils/mockDelay';
-import { Notification, NotificationSettings, NotificationType, NotificationFeatureSettings } from '../../types';
-import { mockNotifications, defaultNotificationSettings } from '../data/notifications';
-import { mockProfiles } from '../data/profiles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import websocketService from './websocketService';
+import { Notification, NotificationSettings, NotificationCategory } from '../../types';
+import { notifications as initialNotifications, settings as initialSettings } from '../data/notifications';
+import { currentUserProfile } from '../data/profiles';
+import { websocketService } from './websocketService';
 
-const SETTINGS_STORAGE_KEY = '@notification_settings';
+const STORAGE_KEY = '@alumni_notifications';
+const SETTINGS_KEY = '@alumni_notification_settings';
 
-let notifications = [...mockNotifications];
-let settings: NotificationSettings = { ...defaultNotificationSettings };
+const mockDelay = (min = 200, max = 800) =>
+  new Promise(resolve => setTimeout(resolve, Math.random() * (max - min) + min));
 
-// Load settings from storage on init
-const loadSettingsFromStorage = async (): Promise<void> => {
+const shouldFail = () => Math.random() < 0.05;
+
+let notifications = [...initialNotifications];
+let settings = { ...initialSettings };
+
+// Persistence helpers
+const saveToStorage = async () => {
   try {
-    const stored = await AsyncStorage.getItem(SETTINGS_STORAGE_KEY);
-    if (stored) {
-      settings = JSON.parse(stored);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
+    await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch (e) {
+    console.error('Failed to save notifications to storage', e);
+  }
+};
+
+import { sanitizeNotificationSettings } from '../../utils/sanitizer';
+
+export const loadFromStorage = async () => {
+  try {
+    const savedNotifications = await AsyncStorage.getItem(STORAGE_KEY);
+    const savedSettings = await AsyncStorage.getItem(SETTINGS_KEY);
+    if (savedNotifications) notifications = JSON.parse(savedNotifications);
+    if (savedSettings) {
+      const parsedSettings = JSON.parse(savedSettings);
+      settings = sanitizeNotificationSettings(parsedSettings);
     }
-  } catch (error) {
-    console.error('Failed to load notification settings:', error);
+  } catch (e) {
+    console.error('Failed to load notifications from storage', e);
   }
 };
 
-// Initialize settings
-loadSettingsFromStorage();
-
-const saveSettingsToStorage = async (): Promise<void> => {
-  try {
-    await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-  } catch (error) {
-    console.error('Failed to save notification settings:', error);
-  }
-};
-
-const enrichNotifications = (items: Notification[]): Notification[] => {
-  return items.map(item => ({
-    ...item,
-    sender: item.senderId ? mockProfiles.find(p => p.id === item.senderId) : undefined,
-  }));
-};
-
-export const getNotifications = async (
-  page: number = 1,
-  limit: number = 20
-): Promise<{ items: Notification[]; hasMore: boolean }> => {
-  await mockDelay();
+export const getNotifications = async (): Promise<Notification[]> => {
+  await mockDelay(500, 1000);
   if (shouldFail()) throw new Error('Failed to fetch notifications');
 
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const paginatedItems = notifications.slice(startIndex, endIndex);
-  const hasMore = endIndex < notifications.length;
-
-  return {
-    items: enrichNotifications(paginatedItems),
-    hasMore,
-  };
+  return [...notifications].sort((a, b) => b.createdAt - a.createdAt);
 };
 
 export const getUnreadCount = async (): Promise<number> => {
-  await mockDelay(100, 300);
-  return notifications.filter(n => !n.isRead).length;
+  await mockDelay(200, 500);
+  if (shouldFail()) throw new Error('Failed to fetch unread count');
+
+  return notifications.filter(n => !n.isRead && n.userId === currentUserProfile.id).length;
 };
 
-export const markAsRead = async (notificationId: string): Promise<Notification> => {
-  await mockDelay();
-  if (shouldFail()) throw new Error('Failed to mark notification as read');
-
-  const index = notifications.findIndex(n => n.id === notificationId);
-  if (index === -1) throw new Error('Notification not found');
-
-  const updatedNotification: Notification = {
-    ...notifications[index],
-    isRead: true,
-  };
-
-  notifications = [
-    ...notifications.slice(0, index),
-    updatedNotification,
-    ...notifications.slice(index + 1),
-  ];
-
-  return enrichNotifications([updatedNotification])[0];
+export const markAsRead = async (notificationId: string): Promise<void> => {
+  await mockDelay(100, 300);
+  const notification = notifications.find(n => n.id === notificationId);
+  if (notification) {
+    notification.isRead = true;
+    await saveToStorage();
+  }
 };
 
 export const markAllAsRead = async (): Promise<void> => {
-  await mockDelay(500, 1000);
-  if (shouldFail()) throw new Error('Failed to mark all notifications as read');
-
-  notifications = notifications.map(n => ({ ...n, isRead: true }));
+  await mockDelay(300, 700);
+  notifications = notifications.map(n =>
+    n.userId === currentUserProfile.id ? { ...n, isRead: true } : n
+  );
+  await saveToStorage();
 };
 
 export const deleteNotification = async (notificationId: string): Promise<void> => {
-  await mockDelay();
-  if (shouldFail()) throw new Error('Failed to delete notification');
-
+  await mockDelay(200, 500);
   notifications = notifications.filter(n => n.id !== notificationId);
+  await saveToStorage();
 };
 
-export const getNotificationSettings = async (): Promise<NotificationSettings> => {
-  await mockDelay(100, 300);
+export const getSettings = async (): Promise<NotificationSettings> => {
+  await mockDelay(300, 600);
   return { ...settings };
 };
 
-export const updateNotificationSettings = async (
+export const updateSettings = async (
   newSettings: Partial<NotificationSettings>
 ): Promise<NotificationSettings> => {
-  await mockDelay(300, 600);
-  if (shouldFail()) throw new Error('Failed to update settings');
+  await mockDelay(500, 1000);
+  if (shouldFail()) throw new Error('Failed to update notification settings');
 
   settings = { ...settings, ...newSettings };
-  await saveSettingsToStorage();
-
+  await saveToStorage();
   return { ...settings };
 };
 
-export const updateFeatureSettings = async (
-  feature: keyof NotificationSettings['features'],
-  featureSettings: Partial<NotificationFeatureSettings>
-): Promise<NotificationSettings> => {
-  await mockDelay(300, 600);
-  if (shouldFail()) throw new Error('Failed to update feature settings');
+export const toggleGlobalNotifications = async (
+  enabled: boolean
+): Promise<{ enabled: boolean }> => {
+  await mockDelay(200, 500);
+  if (shouldFail()) throw new Error('Failed to toggle global notifications');
 
-  settings = {
-    ...settings,
-    features: {
-      ...settings.features,
-      [feature]: {
-        ...settings.features[feature],
-        ...featureSettings,
-      },
-    },
-  };
-
-  await saveSettingsToStorage();
-  return { ...settings };
+  settings.globalEnabled = enabled;
+  await saveToStorage();
+  return { enabled };
 };
 
-export const toggleDoNotDisturb = async (enabled: boolean): Promise<NotificationSettings> => {
-  await mockDelay(200, 400);
-  
-  settings = {
-    ...settings,
-    doNotDisturb: enabled,
-  };
+export const toggleCategoryNotifications = async (
+  category: NotificationCategory,
+  enabled: boolean
+): Promise<{ category: NotificationCategory; enabled: boolean }> => {
+  await mockDelay(200, 500);
+  if (shouldFail()) throw new Error('Failed to toggle category notifications');
 
-  await saveSettingsToStorage();
-  return { ...settings };
-};
-
-export const setQuietHours = async (
-  start: number,
-  end: number
-): Promise<NotificationSettings> => {
-  await mockDelay(200, 400);
-  
-  settings = {
-    ...settings,
-    quietHoursStart: start,
-    quietHoursEnd: end,
-  };
-
-  await saveSettingsToStorage();
-  return { ...settings };
-};
-
-export const isInQuietHours = (): boolean => {
-  if (!settings.doNotDisturb) return false;
-  
-  const now = new Date();
-  const currentHour = now.getHours();
-  const { quietHoursStart, quietHoursEnd } = settings;
-  
-  if (quietHoursStart === undefined || quietHoursEnd === undefined) return false;
-  
-  if (quietHoursStart <= quietHoursEnd) {
-    return currentHour >= quietHoursStart && currentHour < quietHoursEnd;
-  } else {
-    // Handles overnight quiet hours (e.g., 22:00 to 08:00)
-    return currentHour >= quietHoursStart || currentHour < quietHoursEnd;
+  if (settings.perCategory[category]) {
+    settings.perCategory[category].enabled = enabled;
   }
+  await saveToStorage();
+  return { category, enabled };
 };
 
-export const shouldShowNotification = (
-  notificationType: NotificationType
-): boolean => {
+export const updateDoNotDisturb = async (
+  doNotDisturbSettings: Partial<NotificationSettings['doNotDisturb']>
+): Promise<NotificationSettings['doNotDisturb']> => {
+  await mockDelay(200, 500);
+  if (shouldFail()) throw new Error('Failed to update Do Not Disturb settings');
+
+  settings.doNotDisturb = { ...settings.doNotDisturb, ...doNotDisturbSettings };
+  await saveToStorage();
+  return { ...settings.doNotDisturb };
+};
+
+export const updateQuietHours = async (
+  quietHoursSettings: Partial<NotificationSettings['quietHours']>
+): Promise<NotificationSettings['quietHours']> => {
+  await mockDelay(200, 500);
+  if (shouldFail()) throw new Error('Failed to update Quiet Hours settings');
+
+  settings.quietHours = { ...settings.quietHours, ...quietHoursSettings };
+  await saveToStorage();
+  return { ...settings.quietHours };
+};
+
+// Check if a notification should be shown based on current settings
+export const shouldShowNotification = (notification: Notification): boolean => {
   if (!settings.globalEnabled) return false;
-  if (isInQuietHours()) return false;
 
-  // Map notification types to feature categories
-  let feature: keyof NotificationSettings['features'] | null = null;
-  
-  switch (notificationType) {
-    case NotificationType.CONNECTION_REQUEST:
-    case NotificationType.CONNECTION_ACCEPTED:
-      feature = 'connections';
-      break;
-    case NotificationType.GROUP_INVITE:
-    case NotificationType.GROUP_JOIN_REQUEST:
-      feature = 'groups';
-      break;
-    case NotificationType.EVENT_REMINDER:
-    case NotificationType.EVENT_INVITE:
-      feature = 'events';
-      break;
-    case NotificationType.JOB_MATCH:
-      feature = 'jobs';
-      break;
-    case NotificationType.MENTORSHIP_REQUEST:
-    case NotificationType.MENTORSHIP_ACCEPTED:
-      feature = 'mentorship';
-      break;
-    case NotificationType.MENTION:
-      feature = 'mentions';
-      break;
-    case NotificationType.POST_LIKE:
-    case NotificationType.POST_COMMENT:
-    case NotificationType.POST_SHARE:
-    case NotificationType.NEW_POST:
-      feature = 'postInteractions';
-      break;
-    case NotificationType.SYSTEM:
-      feature = 'system';
-      break;
-    default:
-      return true;
-  }
+  const categorySetting = settings.perCategory[notification.category];
+  if (!categorySetting || !categorySetting.enabled) return false;
 
-  if (feature && settings.features[feature]) {
-    return settings.features[feature].inApp;
+  if (settings.doNotDisturb.enabled) return false;
+
+  if (settings.quietHours.enabled) {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMin = now.getMinutes();
+    const currentTime = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
+
+    if (currentTime >= settings.quietHours.startTime || currentTime <= settings.quietHours.endTime) {
+      return false;
+    }
   }
 
   return true;
 };
 
-export const createNotification = async (
-  data: Omit<Notification, 'id' | 'timestamp' | 'isRead'>
-): Promise<Notification | null> => {
-  if (!shouldShowNotification(data.type)) return null;
-
-  const newNotification: Notification = {
-    ...data,
-    id: `notif_${Date.now()}`,
-    timestamp: Date.now(),
-    isRead: false,
-  };
-
-  notifications = [newNotification, ...notifications];
-
-  // Emit WebSocket event
-  websocketService.triggerNotification(newNotification);
-
-  return enrichNotifications([newNotification])[0];
-};
-
-export const registerPushToken = async (token: string): Promise<void> => {
-  await mockDelay(300, 600);
-  console.log('[Notifications] Push token registered:', token);
-};
-
-export const unregisterPushToken = async (): Promise<void> => {
-  await mockDelay(300, 600);
-  console.log('[Notifications] Push token unregistered');
-};
+// Realtime handlers
+websocketService.on('notification_received', async (event: any) => {
+  const notification = event.data as Notification;
+  if (notification.userId === currentUserProfile.id) {
+    notifications.unshift(notification);
+    await saveToStorage();
+  }
+});

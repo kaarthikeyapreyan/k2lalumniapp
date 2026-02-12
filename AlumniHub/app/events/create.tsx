@@ -22,7 +22,7 @@ export default function CreateEventScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedType, setSelectedType] = useState<EventType>(EventType.NETWORKING);
@@ -166,7 +166,7 @@ export default function CreateEventScreen() {
           <View style={styles.switchRow}>
             <Text style={[styles.label, { color: theme.colors.black }]}>Virtual Event</Text>
             <Switch
-              value={isVirtual}
+              value={!!isVirtual}
               onValueChange={setIsVirtual}
               trackColor={{ false: theme.colors.grey3, true: theme.colors.primary }}
             />

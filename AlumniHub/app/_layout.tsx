@@ -8,7 +8,7 @@ import { lightTheme, darkTheme } from '../theme';
 import { rehydrateAuth } from '../store/authSlice';
 import { loadTheme, ThemeMode } from '../utils/theme';
 
-export default function RootLayout() {
+function RootLayout() {
   const systemColorScheme = useColorScheme();
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
   const [isReady, setIsReady] = useState(false);
@@ -47,3 +47,5 @@ export default function RootLayout() {
     </Provider>
   );
 }
+
+export default RootLayout;

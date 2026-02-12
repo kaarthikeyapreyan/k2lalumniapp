@@ -105,11 +105,27 @@ export enum NotificationType {
 
 export enum FeedItemType {
   POST = 'post',
-  EVENT = 'event',
-  JOB = 'job',
+  GROUP_ANNOUNCEMENT = 'group_announcement',
+  GROUP_POST = 'group_post',
+  EVENT_INVITATION = 'event_invitation',
+  EVENT_UPDATE = 'event_update',
+  JOB_POSTING = 'job_posting',
+  ACHIEVEMENT = 'achievement',
   MILESTONE = 'milestone',
-  MEDIA = 'media',
-  SHARED_POST = 'shared_post',
+  POLL = 'poll',
+  SURVEY = 'survey',
+}
+
+export enum FeedItemVisibility {
+  CONNECTIONS_ONLY = 'connections_only',
+  PUBLIC = 'public',
+  GROUP_MEMBERS = 'group_members',
+}
+
+export enum FeedSort {
+  LATEST = 'latest',
+  TOP = 'top',
+  TRENDING = 'trending',
 }
 
 export enum FeedFilter {
@@ -120,10 +136,14 @@ export enum FeedFilter {
   MEDIA = 'media',
 }
 
-export enum FeedSort {
-  LATEST = 'latest',
-  TOP = 'top',
-  TRENDING = 'trending',
+export enum NotificationCategory {
+  CONNECTIONS = 'connections',
+  MESSAGES = 'messages',
+  GROUPS = 'groups',
+  EVENTS = 'events',
+  JOBS = 'jobs',
+  ACHIEVEMENTS = 'achievements',
+  ADMIN = 'admin',
 }
 
 export interface User {
@@ -500,95 +520,125 @@ export interface MentorshipState {
   error: string | null;
 }
 
+export interface PollOption {
+  id: string;
+  text: string;
+  votes: string[];
+}
+
 export interface FeedComment {
   id: string;
   postId: string;
   authorId: string;
+  author?: Profile;
   content: string;
   timestamp: number;
   likes: string[];
-  author?: Profile;
 }
 
 export interface FeedItem {
   id: string;
   type: FeedItemType;
   authorId: string;
+  author?: Profile;
   content: string;
   images?: string[];
-  mediaUrl?: string;
   timestamp: number;
+  visibility: FeedItemVisibility;
+  groupId?: string;
+  group?: Group;
+  eventId?: string;
+  event?: any;
+  jobId?: string;
+  job?: any;
   likes: string[];
   comments: FeedComment[];
   shares: string[];
-  views: number;
   isPinned: boolean;
-  isEdited: boolean;
-  editedAt?: number;
+  isEdited?: boolean;
   sharedPostId?: string;
   sharedPost?: FeedItem;
-  eventId?: string;
-  event?: Event;
-  jobId?: string;
-  job?: Job;
-  author?: Profile;
+  views?: number;
+  pollOptions?: PollOption[];
+  pollEndsAt?: number;
+  metadata?: {
+    achievementType?: string;
+    milestoneCount?: number;
+    surveyUrl?: string;
+  };
   score?: number;
 }
 
-export interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  timestamp: number;
-  isRead: boolean;
-  senderId?: string;
-  sender?: Profile;
-  targetId?: string;
-  targetType?: string;
-  actionUrl?: string;
+export interface FeedFilterSettings {
+  showPosts: boolean;
+  showGroupActivity: boolean;
+  showEvents: boolean;
+  showJobs: boolean;
+  showAchievements: boolean;
+  mutedKeywords: string[];
+  mutedUserIds: string[];
 }
 
-export interface NotificationFeatureSettings {
-  push: boolean;
-  inApp: boolean;
-  email: boolean;
-}
-
-export interface NotificationSettings {
-  globalEnabled: boolean;
-  doNotDisturb: boolean;
-  quietHoursStart?: number;
-  quietHoursEnd?: number;
-  soundEnabled: boolean;
-  vibrationEnabled: boolean;
-  features: {
-    connections: NotificationFeatureSettings;
-    messages: NotificationFeatureSettings;
-    groups: NotificationFeatureSettings;
-    events: NotificationFeatureSettings;
-    jobs: NotificationFeatureSettings;
-    mentorship: NotificationFeatureSettings;
-    mentions: NotificationFeatureSettings;
-    postInteractions: NotificationFeatureSettings;
-    system: NotificationFeatureSettings;
-  };
+export interface FeedResponse {
+  items: FeedItem[];
+  hasMore: boolean;
 }
 
 export interface FeedState {
   items: FeedItem[];
-  filteredItems: FeedItem[];
-  currentItem: FeedItem | null;
-  filter: FeedFilter;
-  sort: FeedSort;
-  page: number;
   hasMore: boolean;
+  page: number;
+  sort: FeedSort;
+  filter: FeedFilter;
   isLoading: boolean;
   error: string | null;
-  isRealtimeConnected: boolean;
+  refreshing: boolean;
+  isRealtimeConnected?: boolean;
 }
 
-export interface NotificationsState {
+export interface Notification {
+  id: string;
+  userId: string;
+  category: NotificationCategory;
+  type: string;
+  title: string;
+  message: string;
+  image?: string;
+  actionUrl?: string;
+  relatedUserId?: string;
+  relatedUser?: Profile;
+  relatedEntityId?: string;
+  relatedEntityType?: string;
+  isRead: boolean;
+  isActioned: boolean;
+  createdAt: number;
+  priority: 'low' | 'normal' | 'high';
+}
+
+export interface NotificationSettings {
+  globalEnabled: boolean;
+  perCategory: {
+    [key in NotificationCategory]: {
+      enabled: boolean;
+      pushEnabled: boolean;
+      soundEnabled: boolean;
+      vibrationEnabled: boolean;
+    };
+  };
+  doNotDisturb: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+    timezone: string;
+  };
+  quietHours: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+  };
+}
+
+export interface NotificationState {
   notifications: Notification[];
   unreadCount: number;
   settings: NotificationSettings;

@@ -24,7 +24,7 @@ export default function CreateJobScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [title, setTitle] = useState('');
   const [company, setCompany] = useState('');
   const [description, setDescription] = useState('');
@@ -79,7 +79,7 @@ export default function CreateJobScreen() {
     setIsLoading(true);
     try {
       const reqList = requirements.split('\n').filter(r => r.trim());
-      
+
       await jobService.createJob({
         title: title.trim(),
         company: company.trim(),
@@ -287,7 +287,7 @@ export default function CreateJobScreen() {
           <View style={styles.switchRow}>
             <Text style={[styles.label, { color: theme.colors.black }]}>Remote Position</Text>
             <Switch
-              value={isRemote}
+              value={!!isRemote}
               onValueChange={setIsRemote}
               trackColor={{ false: theme.colors.grey3, true: theme.colors.primary }}
             />
